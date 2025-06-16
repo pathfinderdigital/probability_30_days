@@ -31,6 +31,7 @@ SELECT
   COUNTIF(event_name = 'begin_checkout') AS begin_checkout_count,
   COUNTIF(event_name = 'view_cart') AS view_cart_count,
   COUNTIF(event_name = 'remove_from_cart') AS remove_from_cart_count,
+  COUNTIF(event_name = 'add_shipping_info') AS add_shipping_info_count,
   SUM(CAST(engagement_time_msec AS INT64)) AS total_engagement_time,
   DATE_DIFF(CURRENT_DATE(), DATE(TIMESTAMP_MICROS(MAX(event_timestamp))), DAY) AS days_since_last_event,
   MAX(device_category) AS device_category,
@@ -39,6 +40,7 @@ SELECT
   MAX(medium) AS traffic_source_medium
 FROM `mokosh.analytics_317847082.base_events`
 GROUP BY user_pseudo_id;
+
 
 -- Step 3: Count page views per user and page_path
 CREATE OR REPLACE TABLE `mokosh.analytics_317847082.page_path_counts` AS
