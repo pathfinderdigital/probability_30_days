@@ -144,10 +144,11 @@ FROM
     )
   );
 
--- Step 10: Score all users and rank by purchase probability
+-- Step 10: Score all users and rank by purchase probability + label
 CREATE OR REPLACE TABLE `mokosh.analytics_317847082.user_scores_balanced` AS
 SELECT
   user_pseudo_id,
+  predicted_made_purchase AS predicted_label,
   predicted_made_purchase_probs[OFFSET(1)].prob AS purchase_probability,
   RANK() OVER (ORDER BY predicted_made_purchase_probs[OFFSET(1)].prob DESC) AS rank
 FROM
