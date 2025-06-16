@@ -21,13 +21,16 @@ WHERE
   _TABLE_SUFFIX BETWEEN FORMAT_DATE('%Y%m%d', DATE_SUB(CURRENT_DATE(), INTERVAL 180 DAY))
   AND FORMAT_DATE('%Y%m%d', CURRENT_DATE());
 
--- Step 2: Aggregate user-level features
+-- Step 2: Aggregate user-level features (expanded behavior)
 CREATE OR REPLACE TABLE `mokosh.analytics_317847082.user_aggregates` AS
 SELECT
   user_pseudo_id,
   COUNTIF(event_name = 'session_start') AS session_count,
   COUNTIF(event_name = 'view_item') AS view_item_count,
   COUNTIF(event_name = 'add_to_cart') AS add_to_cart_count,
+  COUNTIF(event_name = 'begin_checkout') AS begin_checkout_count,
+  COUNTIF(event_name = 'view_cart') AS view_cart_count,
+  COUNTIF(event_name = 'remove_from_cart') AS remove_from_cart_count,
   SUM(CAST(engagement_time_msec AS INT64)) AS total_engagement_time,
   DATE_DIFF(CURRENT_DATE(), DATE(TIMESTAMP_MICROS(MAX(event_timestamp))), DAY) AS days_since_last_event,
   MAX(device_category) AS device_category,
@@ -157,3 +160,11 @@ FROM
       SELECT * FROM `mokosh.analytics_317847082.user_features`
     )
   );
+
+-- Step 11: Extract likely purchasers to "high-intent" table
+CREATE OR REPLACE TABLE `mokosh.analytics_317847082.high_intent_users` AS
+SELECT *
+FROM `mokosh.analytics_317847082.user_scores_balanced`
+WHERE predicted_label = 1
+ORDER BY purchase_probability DESC
+LIMIT 5000;
